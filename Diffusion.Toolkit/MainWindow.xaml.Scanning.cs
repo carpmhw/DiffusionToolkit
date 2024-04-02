@@ -436,12 +436,14 @@ namespace Diffusion.Toolkit
                 }
 
                 var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages, cancellationToken);
+                var (_removed, _removeElapsedTime) = ClearDuplicateFiles(cancellationToken);
 
                 added = _added;
+                removed = _removed;
 
                 if ((added + removed == 0 && reportIfNone) || added + removed > 0)
                 {
-                    Report(added, removed, elapsedTime, updateImages);
+                    Report(added, removed, elapsedTime + _removeElapsedTime, updateImages);
                 }
             }
             catch (Exception ex)
@@ -585,6 +587,78 @@ namespace Diffusion.Toolkit
             window.Owner = this;
             window.ShowDialog();
             LoadAlbums();
+        }
+
+        private (int, float) ClearDuplicateFiles(CancellationToken cancellationToken)
+        {
+            var removed = 0;
+            var scanned = 0;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var imgPath = _dataStore.GetDuplicateImagePaths();
+
+            var max = imgPath.Count();
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalProgress = max;
+                _model.CurrentProgress = 0;
+            });
+
+            var scanning = GetLocalizedText("Actions.Scanning.Status");
+
+            foreach (var file in imgPath)
+            {
+                scanned++;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                
+                if (File.Exists(file.Path))
+                {
+                    continue;
+                }
+
+                _dataStore.DeleteImage(file.Id);
+                removed++;
+
+                if (scanned % 5 == 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.CurrentProgress = scanned;
+
+                        var text = scanning
+                            .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                            .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                        _model.Status = text;
+                    });
+                }
+            }        
+
+            Dispatcher.Invoke(() =>
+            {
+                if (_model.TotalProgress > 0)
+                {
+                    var text = scanning
+                        .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
+                        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                    _model.Status = text;
+                }
+                _model.TotalProgress = Int32.MaxValue;
+                _model.CurrentProgress = 0;
+            });
+
+            stopwatch.Stop();
+
+            var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
+
+            return (removed, elapsedTime);
         }
     }
 }

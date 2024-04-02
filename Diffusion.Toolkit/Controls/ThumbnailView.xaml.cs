@@ -254,7 +254,9 @@ namespace Diffusion.Toolkit.Controls
 
         public void ShowItem(int index, bool focus = false)
         {
-            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            var wrapPanel = GetChildOfType<WrapPanel>(this);
+            if (wrapPanel == null) { return; }             
+
             var item = wrapPanel.Children[index] as ListViewItem;
             ThumbnailListView.ScrollIntoView(item);
             item.BringIntoView();

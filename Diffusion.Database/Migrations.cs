@@ -63,7 +63,7 @@ public class Migrations
 
                     var sql = (string)methodInfo.Invoke(this, null)!;
 
-                    if (sql != null)
+                    if (sql != null && !string.IsNullOrEmpty(sql))
                     {
                         _db.BeginTransaction();
 
@@ -99,6 +99,9 @@ public class Migrations
     [Migrate(MigrationType.Pre)]
     private string RupertAvery20240203_0001_UniquePaths()
     {
+        var existImage = _db.QueryScalars<int>("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='Image')").First();
+        if(existImage == 0) { return string.Empty; }
+
         var dupePaths = _db.QueryScalars<string>("SELECT Path FROM Image GROUP BY Path HAVING COUNT(*) > 1");
 
         void RemoveImages(IEnumerable<int> ids)

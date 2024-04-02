@@ -82,9 +82,9 @@ namespace Diffusion.Toolkit.Controls
 
         public void ReloadThumbnailsView(double offset)
         {
-            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            var wrapPanel = GetChildOfType<WrapPanel>(this);
 
-            if (wrapPanel.Children.Count == 0)
+            if (wrapPanel == null || wrapPanel.Children.Count == 0)
             {
                 return;
             }
