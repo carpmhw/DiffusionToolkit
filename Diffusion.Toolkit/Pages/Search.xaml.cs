@@ -942,12 +942,12 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else
                         {
-                            imageViewModel.ModelName = notFound;
+                            imageViewModel.ModelName = string.IsNullOrWhiteSpace(parameters.ModelHash) ? notFound : parameters.Model ?? notFound;
                         }
                     }
                     else
                     {
-                        imageViewModel.ModelName = notFound;
+                        imageViewModel.ModelName = string.IsNullOrWhiteSpace(parameters.ModelHash) ? notFound : parameters.Model ?? notFound; ;
                     }
 
                 }

@@ -432,9 +432,9 @@
                                     <controls:ThumbnailView 
                                         x:Name="ThumbnailListView" 
                                         Focusable="True"
-                                        Images="{Binding Images}" 
-                                        Page="{Binding Page, Mode=TwoWay}" 
+                                        Images="{Binding Images}"                                        
                                         Pages="{Binding Pages}" 
+                                        Page="{Binding Page, Mode=TwoWay}" 
                                         NSFWBlur="{Binding MainModel.NSFWBlurCommand}"
                                         SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
                                         IsEmpty="{Binding IsEmpty}"
