@@ -1,4 +1,7 @@
 ﻿using Diffusion.Common;
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Diffusion.Database
 {
@@ -12,10 +15,28 @@ namespace Diffusion.Database
 
             if (QueryBuilder.HideNSFW)
             {
-                whereClause = "WHERE (NSFW = 0 OR NSFW IS NULL)";
+                whereClause = "AND (NSFW = 0 OR NSFW IS NULL)";
             }
 
-            var query = $"SELECT Model AS Name, ModelHash AS Hash, COUNT(*) AS ImageCount FROM Image {whereClause} GROUP BY Model, ModelHash";
+            //var query = $"SELECT Model AS Name, ModelHash AS Hash, COUNT(*) AS ImageCount FROM Image {whereClause} GROUP BY Model, ModelHash";
+       
+            var query = " WITH MODEL_CTE AS ( "
+                      + "   SELECT Model AS Name, ModelHash AS Hash, COUNT(*) AS ImageCount "
+                      + "     FROM Image "
+                      + $"    WHERE IFNULL(ModelHash, '') <> '' {whereClause} "
+                      + " GROUP BY Model, ModelHash "
+                      + " ) "
+                      + " SELECT B.Name AS Name , A.Hash, A.ImageCount "
+                      + "   FROM ( " 
+                      + "        SELECT Hash, SUM(ImageCount) AS ImageCount " 
+                      + "          FROM MODEL_CTE " 
+                      + "      GROUP BY Hash "
+                      + "  ) AS A "
+                      + " LEFT JOIN( "
+                      + "     SELECT Name, Hash, RANK() OVER (PARTITION BY Hash ORDER BY ImageCount DESC, Name DESC) [RANK] "
+                      + "       FROM MODEL_CTE "
+                      + "   ) AS B ON(B.[RANK] = 1 AND B.Hash = A.Hash) "
+                      + " ORDER BY B.Name ";
 
             var models = db.Query<ModelView>(query);
 

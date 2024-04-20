@@ -122,6 +122,15 @@ namespace Diffusion.Toolkit
         {
             OnPreviewKeyDown(e);
         }
+
+        private void PreviewPane_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            OnMouseLeftButtonDown(e);
+        }
+        private void PreviewPane_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            OnMouseRightButtonDown(e);
+        }
     }
 
     

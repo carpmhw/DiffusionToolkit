@@ -436,25 +436,5 @@ namespace Diffusion.Database
 
             return result;
         }
-
-        public IEnumerable<ImagePath> GetDuplicateImagePaths()
-        {
-            using var db = OpenConnection();
-
-            string sqlcommand = " SELECT I.Id, I.Path FROM Image I "
-                              + "   JOIN ( "
-                              + "      SELECT FileName, FileSize, CreatedDate, ModifiedDate FROM Image "
-                              + "       GROUP BY FileName, FileSize, CreatedDate, ModifiedDate HAVING COUNT(*) > 1 "
-                              + "    ) A ON(A.FileName = I.FileName AND A.CreatedDate = I.CreatedDate AND A.ModifiedDate = I.ModifiedDate) ";
-
-            var images = db.Query<ImagePath>(sqlcommand);
-
-            foreach (var image in images)
-            {                
-                yield return image;
-            }
-
-            db.Close();
-        }
     }
 }

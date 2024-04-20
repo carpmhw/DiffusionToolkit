@@ -259,6 +259,8 @@ namespace Diffusion.Toolkit
                     _previewWindow = null;
                 };
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
+                _previewWindow.PreviewMouseLeftButtonDown += _search.ExtOnMouseLeftButtonDown;
+                _previewWindow.PreviewMouseRightButtonDown += _search.ExtOnMouseRightButtonDown;
                 _search.OnCurrentImageChange = (image) =>
                 {
                     _previewWindow?.SetCurrentImage(image);
@@ -280,6 +282,10 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private void _previewWindow_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         private void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
@@ -1031,9 +1037,13 @@ namespace Diffusion.Toolkit
         {
             if (_settings.ImagePaths.Any())
             {
+                LoadFolders();
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
-                    Scan();
+                    _ = Scan().ContinueWith((t) =>
+                    {
+                        LoadImageModels();
+                    });                 
                 };
             }
             else

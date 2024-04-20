@@ -41,10 +41,12 @@
                             <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyPromptCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"/>
                             <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyParametersCommand}" Content="{lex:Loc Metadata.Buttons.CopyAll}"/>
                         </Grid>
-                    </local:AccordionControl.ButtonAreaContent>
+                    </local:AccordionControl.ButtonAreaContent>                  
                     <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"/>
+                             IsReadOnly="True" 
+                             MinLines="1" MaxLines="8" VerticalScrollBarVisibility="Auto" 
+                             Padding="5" TextWrapping="Wrap" Text="{Binding Prompt}"/>
+                   
                 </local:AccordionControl>
 
                 <local:AccordionControl x:Name="NegativePromptMetadata" 
@@ -60,8 +62,9 @@
                         </Grid>
                     </local:AccordionControl.ButtonAreaContent>
                     <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"/>
+                             IsReadOnly="True"
+                             MinLines="1" MaxLines="8" VerticalScrollBarVisibility="Auto" 
+                             Padding="5" TextWrapping="Wrap" Text="{Binding NegativePrompt}"/>
                 </local:AccordionControl>
 
                 <local:AccordionControl x:Name="SeedMetadata" 
@@ -124,8 +127,9 @@
                         </Grid>
                     </local:AccordionControl.ButtonAreaContent>
                     <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"/>
+                             IsReadOnly="True"
+                             MinLines="1" MaxLines="8" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                             Padding="5" TextWrapping="Wrap" Text="{Binding OtherParameters}"/>
                 </local:AccordionControl>
 
                 <local:AccordionControl x:Name="ModelMetadata" 
@@ -148,8 +152,10 @@
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="80"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"   
+                                     IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"/>
+                        </ScrollViewer>
                         <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"/>
                     </Grid>
                 </local:AccordionControl>

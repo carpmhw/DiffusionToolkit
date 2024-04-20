@@ -281,8 +281,8 @@ namespace Diffusion.Toolkit
 
                     var image = new Image()
                     {
-                        Prompt = file.Prompt,
-                        NegativePrompt = file.NegativePrompt,
+                        Prompt = file.Prompt?.Trim(),
+                        NegativePrompt = file.NegativePrompt?.Trim(),
                         Path = file.Path,
                         FileName = fileInfo.Name,
                         Width = file.Width,
@@ -406,11 +406,6 @@ namespace Diffusion.Toolkit
             {
                 var existingImages = _dataStore.GetImagePaths().ToList();
 
-                Dispatcher.Invoke(() =>
-                {
-                    _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
-                });
-
                 var filesToScan = new List<string>();
 
                 var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
@@ -436,7 +431,7 @@ namespace Diffusion.Toolkit
                 }
 
                 var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages, cancellationToken);
-                var (_removed, _removeElapsedTime) = ClearDuplicateFiles(cancellationToken);
+                var (_removed, _removeElapsedTime) = ClearNotExistFiles(existingImages, cancellationToken);
 
                 added = _added;
                 removed = _removed;
@@ -589,7 +584,7 @@ namespace Diffusion.Toolkit
             LoadAlbums();
         }
 
-        private (int, float) ClearDuplicateFiles(CancellationToken cancellationToken)
+        private (int, float) ClearNotExistFiles(List<ImagePath> imagePaths, CancellationToken cancellationToken)
         {
             var removed = 0;
             var scanned = 0;
@@ -597,9 +592,10 @@ namespace Diffusion.Toolkit
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var imgPath = _dataStore.GetDuplicateImagePaths();
+            var filesToRomove = new List<int>();
+            filesToRomove.AddRange(imagePaths.Where(p => !File.Exists(p.Path)).Select(p => p.Id));
 
-            var max = imgPath.Count();
+            var max = filesToRomove.Count();
 
             Dispatcher.Invoke(() =>
             {
@@ -607,38 +603,44 @@ namespace Diffusion.Toolkit
                 _model.CurrentProgress = 0;
             });
 
-            var scanning = GetLocalizedText("Actions.Scanning.Status");
+            var scanning = GetLocalizedText("Actions.Scanning.CheckRemoved");
 
-            foreach (var file in imgPath)
+            List<int> tmpId = new List<int>();
+            foreach (var id in filesToRomove)
             {
                 scanned++;
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
                 }
+                tmpId.Add(id);
                 
-                if (File.Exists(file.Path))
+                if(scanned % 20 != 0) { continue; }              
+
+                _dataStore.RemoveImages(tmpId);
+                removed += tmpId.Count;
+
+                tmpId.Clear();
+                Dispatcher.Invoke(() =>
                 {
-                    continue;
-                }
+                    _model.CurrentProgress = scanned;
 
-                _dataStore.DeleteImage(file.Id);
-                removed++;
+                    var text = scanning
+                        .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
 
-                if (scanned % 5 == 0)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.CurrentProgress = scanned;
-
-                        var text = scanning
-                            .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                            .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                        _model.Status = text;
-                    });
-                }
+                    _model.Status = text;
+                });
+                
             }        
+
+            if(tmpId.Any())
+            {
+                _dataStore.RemoveImages(tmpId);
+                removed += tmpId.Count;
+
+                tmpId.Clear();
+            }
 
             Dispatcher.Invoke(() =>
             {

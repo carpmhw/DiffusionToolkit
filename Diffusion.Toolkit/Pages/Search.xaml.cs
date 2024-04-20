@@ -706,7 +706,7 @@ namespace Diffusion.Toolkit.Pages
                         {
                             if (_model.MainModel.CurrentModel != null)
                             {
-                                query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                                query = $"{query} model_hash: {_model.MainModel.CurrentModel.Hash}";
                             }
                         }
 
@@ -1374,7 +1374,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     if (_model.MainModel.CurrentModel != null)
                     {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        query = $"{query} model_hash: {_model.MainModel.CurrentModel.Hash}";
                     }
                     else
                     {
@@ -1643,7 +1643,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     if (_model.MainModel.CurrentModel != null)
                     {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        query = $"{query} model_hash: {_model.MainModel.CurrentModel.Hash}";
                     }
                     else
                     {
@@ -2143,6 +2143,23 @@ namespace Diffusion.Toolkit.Pages
             _settings.NavigationThumbnailGridWidth2 = "3*";
             _settings.PreviewGridHeight = "*";
             _settings.PreviewGridHeight2 = "3*";
+        }
+
+        public void ExtOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                NavigateCursorNext();
+            }
+
+        }
+        public void ExtOnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                NavigateCursorPrevious();
+            }
+
         }
     }
 }

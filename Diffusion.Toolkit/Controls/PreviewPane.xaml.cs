@@ -109,6 +109,7 @@ namespace Diffusion.Toolkit.Controls
             InitIcons();
             _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
             SizeChanged += OnSizeChanged;
+            ScrollViewer.ContextMenuOpening += OnContextMenuOpening;
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -407,6 +408,16 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
+        private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            OnContextMenuOpening(e);
+        }
 
         //private void ScrollViewer_OnMouseLeave(object sender, MouseEventArgs e)
         //{

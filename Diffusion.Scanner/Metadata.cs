@@ -9,6 +9,8 @@ using System.Globalization;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 using System.Linq;
+using MetadataExtractor.Formats.Flir;
+using MetadataExtractor.Formats.Exif;
 
 namespace Diffusion.IO;
 
@@ -249,7 +251,7 @@ public class Metadata
                     break;
                 }
             case FileType.JPEG:
-                {
+                {            
                     IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(stream);
 
                     try
@@ -1035,11 +1037,13 @@ public class Metadata
                     break;
                 case 2:
 
-                    fileParameters.OtherParameters = part;
+                    fileParameters.OtherParameters = "";
 
                     //var decimalFormatter = new DecimalFormatter();
+                    List<string> otherPara = new List<string>();
+                    bool modelHashFlag = false;
 
-                    var subParts = part.Split(new[] { ',' });
+                    var subParts = part.Split(new[] { ',' });                    
                     foreach (var keyValue in subParts)
                     {
                         var kvp = keyValue.Split(new[] { ':' });
@@ -1064,9 +1068,18 @@ public class Metadata
                                 break;
                             case "Model hash":
                                 fileParameters.ModelHash = kvp[1].Trim();
+                                modelHashFlag = true;
                                 break;
                             case "Model":
-                                fileParameters.Model = kvp[1].Trim();
+                                if (modelHashFlag)
+                                {
+                                    fileParameters.Model = kvp[1].Trim();
+                                    modelHashFlag = false;
+                                }
+                                else
+                                {
+                                    otherPara.Add(keyValue.Trim());
+                                }
                                 break;
                             case "Batch size":
                                 fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
@@ -1081,7 +1094,15 @@ public class Metadata
                             case "Score":
                                 fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
+                            default:
+                                otherPara.Add(keyValue.Trim());
+                                break;
                         }
+                    }
+
+                    if (otherPara.Any()) 
+                    {
+                        fileParameters.OtherParameters = string.Join(", ", otherPara);
                     }
 
                     state = 3;
@@ -1146,7 +1167,13 @@ public class Metadata
                 {
                     if (tag.Name == "User Comment")
                     {
-                        fileParameters = ReadA111Parameters(tag.Description);
+                        string comment = tag.Description ?? "";
+                        if(comment.Contains("\u3100"))
+                        {
+                            comment = System.Text.Encoding.Unicode.GetString(System.Text.Encoding.BigEndianUnicode.GetBytes(comment));
+                        }            
+
+                        fileParameters = ReadA111Parameters(comment);
                     }
                 }
             }
