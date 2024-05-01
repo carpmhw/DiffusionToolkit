@@ -424,15 +424,31 @@ namespace Diffusion.Database
 
         public int CleanRemovedFolders(IEnumerable<string> watchedFolders)
         {
-            using var db = OpenConnection();
+            int result;
 
-            var whereClause = string.Join(" AND ", watchedFolders.Select(f => "PATH NOT LIKE ? || '\\%'"));
+            using (var db = OpenConnection())
+            {                
+                if (watchedFolders.Any())
+                {
+                    var whereClause = string.Join(" AND ", watchedFolders.Select(f => "PATH NOT LIKE ? || '\\%'"));
+                    var createTmpCommand = db.CreateCommand($"CREATE TEMPORARY TABLE tmpImg AS SELECT Id, Path FROM Image WHERE {whereClause}", watchedFolders.ToArray());
+                    createTmpCommand.ExecuteNonQuery();
 
-            var query = $"DELETE FROM Image WHERE {whereClause}";
+                    var deleteFromAlbum = db.CreateCommand("DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM tmpImg)");
+                    deleteFromAlbum.ExecuteNonQuery();
 
-            var result = db.Execute(query, watchedFolders.ToArray());
+                    var deleteImage = db.CreateCommand("DELETE FROM Image WHERE Id IN (SELECT Id FROM tmpImg)");
+                    result = deleteImage.ExecuteNonQuery();
+                }
+                else
+                {
+                    var deleteFromAlbum = db.CreateCommand("DELETE FROM AlbumImage");
+                    deleteFromAlbum.ExecuteNonQuery();
 
-            db.Close();
+                    var deleteImage = db.CreateCommand("DELETE FROM Image");
+                    result = deleteImage.ExecuteNonQuery();
+                }
+            }
 
             return result;
         }

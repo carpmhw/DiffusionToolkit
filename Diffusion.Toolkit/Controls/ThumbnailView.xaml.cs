@@ -23,7 +23,7 @@ namespace Diffusion.Toolkit.Controls
     /// </summary>
     public partial class ThumbnailView : UserControl
     {
-        private IEnumerable<Album> _albums;
+        private IEnumerable<AlbumModel> _albums;
         private IOptions<DataStore> _dataStoreOptions;
 
         public ThumbnailViewModel Model { get; set; }

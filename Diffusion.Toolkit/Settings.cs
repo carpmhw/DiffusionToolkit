@@ -513,7 +513,7 @@ public class NavigationSectionSettings : SettingsContainer
         AlbumHeight = Double.PositiveInfinity;
     }
 
-    public NavigationSectionSettings(bool initialize)
+    public NavigationSectionSettings(bool initialize): this()
     {
         if (initialize)
         {

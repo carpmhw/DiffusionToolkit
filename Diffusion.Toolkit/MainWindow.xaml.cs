@@ -35,6 +35,7 @@ using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Configuration;
+using System.Collections.ObjectModel;
 
 namespace Diffusion.Toolkit
 {
@@ -352,6 +353,7 @@ namespace Diffusion.Toolkit
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var dataStore = new DataStore(_dbPath);
+            bool tryScanFolders = false;
 
             if (!_configuration.Exists())
             {
@@ -376,9 +378,7 @@ namespace Diffusion.Toolkit
                 }
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
-
-                await TryScanFolders();
-
+                tryScanFolders = true;
             }
             else
             {
@@ -418,7 +418,7 @@ namespace Diffusion.Toolkit
                     MessageBox.Show(this, "An error occured while loading configuration settings. The application will exit", "Startup failed!", MessageBoxButton.OK, MessageBoxImage.Error);
                     throw;
                 }
-              
+
             }
 
 
@@ -492,7 +492,7 @@ namespace Diffusion.Toolkit
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
             var total = _dataStore.GetTotal();
-            
+
             var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
 
             _model.Status = text;
@@ -710,9 +710,20 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            if (_settings.ImagePaths.Any())
+            if (tryScanFolders)
             {
-                _search.SearchImages(null);
+                await TryScanFolders();
+                if (_settings.PortableMode)
+                {
+                    GoPortable();
+                }
+            }
+            else
+            { 
+                if (_settings.ImagePaths.Any())
+                {
+                    _search.SearchImages(null);
+                }
             }
 
             Logger.Log($"Init completed");
@@ -1043,11 +1054,23 @@ namespace Diffusion.Toolkit
                     _ = Scan().ContinueWith((t) =>
                     {
                         LoadImageModels();
+                        if (_model.Albums.Any())
+                        {
+                            LoadAlbums();
+                        }
                     });                 
                 };
             }
             else
             {
+                _model.Folders.Clear();
+                _model.ImageModels = Enumerable.Empty<Models.ModelViewModel>();
+                _model.SelectedImages?.Clear();
+           
+                if (_model.Albums.Any())
+                {
+                    LoadAlbums();
+                }
                 await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd one or more folders first, then click the Scan Folders for new images icon in the toolbar.", "Setup", PopupButtons.OK);
             }
         }

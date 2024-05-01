@@ -36,7 +36,7 @@
         <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
-        <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbumCommand}"></KeyBinding>
+        <!--<KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbumCommand}"></KeyBinding>-->
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="N" Command="{Binding ToggleHideNSFW}"></KeyBinding>
